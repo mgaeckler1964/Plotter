@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="iso-8859-1" ?>
+<gui>
+<forms>
+<form name="PlotterFORM" style="277807104" width="777" height="603" caption="Function plotter" id="128" baseClass="OverlappedWindow" bgColor="COLOR_WINDOW " bg_red="0" bg_green="0" bg_blue="0">
+<layoutManager type="AttachmentManager" />
+<child type="FrameChild" name="ControlCHILD" caption="" x="0" y="0" width="760" height="145" style="1342308352" id="137" bgColor="COLOR_WINDOW " bg_red="0" bg_green="0" bg_blue="0">
+<layout attachment="1" growHeight="0" x="0" y="0" growWidth="1" />
+<layoutManager type="TableManager" marginLeft="4" marginRight="4" marginTop="4" marginBottom="4" />
+<child type="Label" name="" caption="X-Interval" x="20" y="29" width="0" height="0" style="1342242827" bgColor="COLOR_WINDOW " bg_red="0" bg_green="0" bg_blue="0">
+<layout x="0" y="0" width="1" height="1" growWidth="0" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="EditControl" name="EditXmin" caption="-5" x="96" y="16" width="80" height="24" style="1350631808" id="129">
+<layout x="1" y="0" width="1" height="1" growWidth="2" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="EditControl" name="EditXmax" caption="+5" x="208" y="21" width="80" height="25" style="1350631808" id="130">
+<layout x="2" y="0" width="1" height="1" growWidth="2" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="Label" name="" caption="Y-Intervall" x="322" y="27" width="80" height="25" style="1342242827" bgColor="COLOR_WINDOW " bg_red="0" bg_green="0" bg_blue="0">
+<layout x="3" y="0" width="1" height="1" growWidth="0" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="EditControl" name="EditYmin" caption="-5" x="428" y="23" width="80" height="25" style="1350631808" id="131">
+<layout x="4" y="0" width="1" height="1" growWidth="2" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="EditControl" name="EditYmax" caption="+5" x="564" y="32" width="80" height="25" style="1350631808" id="132">
+<layout x="5" y="0" width="1" height="1" growWidth="2" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="PushButton" name="PUSHrefresh" caption="Aktualisieren" x="678" y="41" width="80" height="25" style="1342242816" id="133">
+<layout x="6" y="0" width="1" height="1" growWidth="0" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="Label" name="" caption="f(x)=" x="21" y="65" width="80" height="25" style="1342242827" bgColor="COLOR_WINDOW " bg_red="0" bg_green="0" bg_blue="0">
+<layout x="0" y="1" width="1" height="1" growWidth="0" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="EditControl" name="EditFunction1" caption="sin(x)" x="129" y="38" width="80" height="25" style="1350631808" id="134">
+<layout x="1" y="1" width="5" height="1" growWidth="2" growHeight="0" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="EditControl" name="EditFunction2" caption="cos(x)" x="140" y="77" width="80" height="25" style="1350631808" id="135">
+<layout x="1" y="2" width="5" growWidth="2" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+<child type="EditControl" name="EditFunction3" caption="tan(x)" x="132" y="123" width="80" height="25" style="1350631808" id="136">
+<layout x="1" y="3" width="5" growWidth="2" paddingLeft="4" paddingRight="4" paddingTop="4" paddingBottom="4" />
+</child>
+</child>
+<child type="FrameChild" name="PaintBox" caption="" x="136" y="323" width="80" height="25" style="1342308352" id="138">
+<layout attachment="4" y="1" growWidth="10" growHeight="10" />
+</child>
+</form>
+</forms>
+</gui>

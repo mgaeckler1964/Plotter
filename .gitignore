@@ -38,3 +38,9 @@ bin/
 # Backups
 *.bak
 *.~*
+
+# MSVC
+*.user
+*.suo
+*.sdf
+ipch/
