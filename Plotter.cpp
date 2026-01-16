@@ -434,6 +434,9 @@ ProcessStatus PlotterMainWindow::handleResize( const Size &newSize )
 
 ProcessStatus PlotterMainWindow::handleRepaint(Device &hDC)
 {
+	if( !m_graphValues.size() )
+		recalc();
+
 	paintGraph();
 	return PlotterFORM_form::handleRepaint(hDC);
 }
