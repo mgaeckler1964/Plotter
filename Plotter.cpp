@@ -98,19 +98,16 @@ struct FunctionPlot : public gak::Array<Point>
 
 class PlotterMainWindow : public PlotterFORM_form
 {
-	bool created;
+	double m_minX;
+	double m_maxX;
+	double m_minY;
+	double m_maxY;
 
-	double minX;
-	double maxX;
-	double minY;
-	double maxY;
-
-	gak::Array<FunctionPlot>	graphValues;
+	gak::Array<FunctionPlot>	m_graphValues;
 
 	void paintGraph();
 	void recalc();
 
-	virtual ProcessStatus handleCreate();
 	virtual ProcessStatus handleButtonClick( int control );
 	virtual ProcessStatus handleResize( const Size &newSize );
 	virtual ProcessStatus handleRepaint( Device &hDC );
@@ -178,7 +175,7 @@ static WindowsApplication	app;
 // ----- class constructors/destructors -------------------------------- //
 // --------------------------------------------------------------------- //
 
-PlotterMainWindow::PlotterMainWindow() : PlotterFORM_form( nullptr ), created(false)
+PlotterMainWindow::PlotterMainWindow() : PlotterFORM_form( nullptr )
 {
 }
 
@@ -195,42 +192,42 @@ void PlotterMainWindow::paintGraph()
 	int			imageWidth =  PaintBox->getClientSize().width;
 	int			imageHeight =  PaintBox->getClientSize().height;
 	DrawDevice	dc(PaintBox);
-	double		deltaX = (maxX-minX)/imageWidth;
-	double		deltaY = (maxY-minY)/imageHeight;
+	double		deltaX = (m_maxX-m_minX)/imageWidth;
+	double		deltaY = (m_maxY-m_minY)/imageHeight;
 
 	dc.rectangle( RectBorder( 0, 0, imageWidth-1, imageHeight-1) );
 	dc.getPen().setColor(colors::BLACK);
 
-	if( minX <= 0 && maxX >= 0 )
+	if( m_minX <= 0 && m_maxX >= 0 )
 	{
-		int yAxis = int(-minX / (-minX+maxX) * imageWidth);
+		int yAxis = int(-m_minX / (-m_minX+m_maxX) * imageWidth);
 		dc.moveTo( yAxis, 0 );
 		dc.lineTo( yAxis, imageHeight-1 );
 
-		for( double y = ceil( minY ); y <= maxY; y++ )
+		for( double y = ceil( m_minY ); y <= m_maxY; y++ )
 		{
-			int iy = int((maxY-y)/deltaY);
+			int iy = int((m_maxY-y)/deltaY);
 			dc.moveTo( yAxis, iy );
 			dc.lineTo( yAxis+5, iy );
 		}
 	}
-	if( minY <= 0 && maxY >= 0 )
+	if( m_minY <= 0 && m_maxY >= 0 )
 	{
-		int xAxis = int(maxY / (-minY+maxY) * imageHeight);
+		int xAxis = int(m_maxY / (-m_minY+m_maxY) * imageHeight);
 		dc.moveTo( 0, xAxis );
 		dc.lineTo( imageWidth-1, xAxis );
 
-		for( double x = ceil( minX ); x <= maxX; x++ )
+		for( double x = ceil( m_minX ); x <= m_maxX; x++ )
 		{
-			int ix = int((maxY-x)/deltaX);
+			int ix = int((m_maxY-x)/deltaX);
 			dc.moveTo( ix,  xAxis );
 			dc.lineTo( ix, xAxis-5 );
 		}
 	}
 
 	for(
-		gak::Array<FunctionPlot>::const_iterator it = graphValues.cbegin(),
-			endIT = graphValues.cend();
+		gak::Array<FunctionPlot>::const_iterator it = m_graphValues.cbegin(),
+			endIT = m_graphValues.cend();
 		it != endIT;
 		++it
 	)
@@ -250,23 +247,23 @@ void PlotterMainWindow::recalc()
 {
 	static COLORREF	theColors[] = { colors::BLUE, colors::RED, colors::LIME };
 
-	graphValues.clear();
+	m_graphValues.clear();
 
-	minX = EditXmin->getText() > "" ? EditXmin->getText().getValueN<double>() : 0;
-	maxX = EditXmax->getText() > "" ? EditXmax->getText().getValueN<double>() : 0;
-	minY = EditYmin->getText() > "" ? EditYmin->getText().getValueN<double>() : 0;
-	maxY = EditYmax->getText() > "" ? EditYmax->getText().getValueN<double>() : 0;
+	m_minX = EditXmin->getText() > "" ? EditXmin->getText().getValueN<double>() : 0;
+	m_maxX = EditXmax->getText() > "" ? EditXmax->getText().getValueN<double>() : 0;
+	m_minY = EditYmin->getText() > "" ? EditYmin->getText().getValueN<double>() : 0;
+	m_maxY = EditYmax->getText() > "" ? EditYmax->getText().getValueN<double>() : 0;
 
-	if( minX >= maxX )
+	if( m_minX >= m_maxX )
 		throw LibraryException( "X Bounds missing or wrong." );
-	if( minY >= maxY )
+	if( m_minY >= m_maxY )
 		throw LibraryException( "Y Bounds missing or wrong." );
 
 	int	imageWidth =  PaintBox->getClientSize().width;
 	int	imageHeight =  PaintBox->getClientSize().height;
 
-	double deltaX = (maxX-minX)/imageWidth;
-	double deltaY = (maxY-minY)/imageHeight;
+	double deltaX = (m_maxX-m_minX)/imageWidth;
+	double deltaY = (m_maxY-m_minY)/imageHeight;
 
 	if( EditXmin->getText() == "" || EditXmax->getText() == "" )
 	{
@@ -274,9 +271,9 @@ void PlotterMainWindow::recalc()
 			throw LibraryException( "X Bound cannot be calculated" );
 
 		if( EditXmin->getText() == "" )
-			minX = maxX - imageWidth * deltaY;
+			m_minX = m_maxX - imageWidth * deltaY;
 		else
-			maxX = minX + imageWidth * deltaY;
+			m_maxX = m_minX + imageWidth * deltaY;
 		deltaX = deltaY;
 	}
 	if( EditYmin->getText() == "" || EditYmax->getText() == "" )
@@ -285,9 +282,9 @@ void PlotterMainWindow::recalc()
 			throw LibraryException( "Y Bound cannot be calculated" );
 
 		if( EditYmin->getText() == "" )
-			minY = maxY - imageHeight * deltaX;
+			m_minY = m_maxY - imageHeight * deltaX;
 		else
-			maxY = minY + imageHeight * deltaX;
+			m_maxY = m_minY + imageHeight * deltaX;
 		deltaY = deltaX;
 	}
 
@@ -313,7 +310,7 @@ void PlotterMainWindow::recalc()
 
 			int	ix, iy;
 
-			double x = minX;
+			double x = m_minX;
 			double y;
 			Point	newPoint;
 
@@ -326,11 +323,11 @@ void PlotterMainWindow::recalc()
 					try
 					{
 						y = theEvaluator.evaluate( funcTerm, x );
-						if( y>=minY && y<=maxY )
+						if( y>=m_minY && y<=m_maxY )
 							break;
 
 						// store this point
-						iy = int((maxY-y)/deltaY);
+						iy = int((m_maxY-y)/deltaY);
 						newPoint.x = ix;
 						newPoint.y = iy;
 					}
@@ -372,7 +369,7 @@ void PlotterMainWindow::recalc()
 				if( ix >= imageWidth )
 					break;
 
-				FunctionPlot	&oneGraph = graphValues.createElement();
+				FunctionPlot	&oneGraph = m_graphValues.createElement();
 				oneGraph.theColor = color;
 				// add the last invisible point if availabe
 				if( newPoint.x+1 == ix )
@@ -381,7 +378,7 @@ void PlotterMainWindow::recalc()
 				while( true )
 				{
 					// add the last evaluation
-					iy = int((maxY-y)/deltaY);
+					iy = int((m_maxY-y)/deltaY);
 
 					Point	&newPoint = oneGraph.createElement();
 
@@ -395,7 +392,7 @@ void PlotterMainWindow::recalc()
 						break;
 					x += deltaX;
 
-					if( y<minY || y>maxY )
+					if( y<m_minY || y>m_maxY )
 						break;
 
 					y = theEvaluator.evaluate( funcTerm, x );
@@ -417,12 +414,6 @@ void PlotterMainWindow::recalc()
 // ----- class virtuals ------------------------------------------------ //
 // --------------------------------------------------------------------- //
    
-ProcessStatus PlotterMainWindow::handleCreate()
-{
-	created = true;
-	return psDO_DEFAULT;
-}
-
 ProcessStatus PlotterMainWindow::handleButtonClick( int control )
 {
 	if( control == PUSHrefresh_id )
@@ -436,7 +427,7 @@ ProcessStatus PlotterMainWindow::handleButtonClick( int control )
 
 ProcessStatus PlotterMainWindow::handleResize( const Size &newSize )
 {
-	if( created )
+	if( isReady() )
 		recalc();
 	return PlotterFORM_form::handleResize(newSize);
 }
