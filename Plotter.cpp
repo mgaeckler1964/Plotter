@@ -311,7 +311,7 @@ void PlotterMainWindow::recalc()
 			int	ix, iy;
 
 			double x = m_minX;
-			double y;
+			double y=0;
 			Point	newPoint;
 
 			ix = 0;
