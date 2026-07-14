@@ -127,7 +127,7 @@ class WindowsApplication : public GuiApplication
 	}
 	virtual CallbackWindow  *createMainWindow( const char * /*cmdLine*/, int /*nCmdShow*/ )
 	{
-		std::auto_ptr<PlotterMainWindow>	mainWindow( new PlotterMainWindow );
+		std::unique_ptr<PlotterMainWindow>	mainWindow( new PlotterMainWindow );
 		if( mainWindow->create( nullptr ) == scERROR )
 		{
 			throw gak::LibraryException( "Could not create window!" );
