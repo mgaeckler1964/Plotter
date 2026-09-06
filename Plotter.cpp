@@ -108,16 +108,16 @@ class PlotterMainWindow : public PlotterFORM_form
 	void paintGraph();
 	void recalc();
 
-	virtual ProcessStatus handleButtonClick( int control );
-	virtual ProcessStatus handleResize( const Size &newSize );
-	virtual ProcessStatus handleRepaint( Device &hDC );
+	ProcessStatus handleButtonClick( int control ) override;
+	ProcessStatus handleResize( const Size &newSize ) override;
+	ProcessStatus handleRepaint( Device &hDC ) override;
 public:
 	PlotterMainWindow();
 };
 
 class WindowsApplication : public GuiApplication
 {
-	virtual bool startApplication( HINSTANCE /*hInstance*/, const char * /* cmdLine */ )
+	bool startApplication( HINSTANCE /*hInstance*/, const char * /* cmdLine */ ) override
 	{
 		doEnableLogEx(gakLogging::llInfo);
 		doDisableLog();
@@ -125,7 +125,7 @@ class WindowsApplication : public GuiApplication
 		setCompany("gak");
 		return false;
 	}
-	virtual CallbackWindow  *createMainWindow( const char * /*cmdLine*/, int /*nCmdShow*/ )
+	CallbackWindow  *createMainWindow( const char * /*cmdLine*/, int /*nCmdShow*/ ) override
 	{
 		std::unique_ptr<PlotterMainWindow>	mainWindow( new PlotterMainWindow );
 		if( mainWindow->create( nullptr ) == scERROR )
@@ -136,7 +136,7 @@ class WindowsApplication : public GuiApplication
 
 		return mainWindow.release();
 	}
-	virtual void deleteMainWindow( BasicWindow  *mainWindow )
+	void deleteMainWindow( BasicWindow  *mainWindow ) override
 	{
 		delete mainWindow;
 	}
