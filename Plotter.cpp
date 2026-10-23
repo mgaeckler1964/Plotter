@@ -125,7 +125,7 @@ class WindowsApplication : public GuiApplication
 		setCompany("gak");
 		return false;
 	}
-	CallbackWindow  *createMainWindow( const char * /*cmdLine*/, int /*nCmdShow*/ ) override
+	CallbackWindow  *createMainWindow( const char * /*cmdLine*/, ShowWindowMode /*nCmdShow*/ ) override
 	{
 		std::unique_ptr<PlotterMainWindow>	mainWindow( new PlotterMainWindow );
 		if( mainWindow->create( nullptr ) == scERROR )
@@ -195,7 +195,7 @@ void PlotterMainWindow::paintGraph()
 	double		deltaX = (m_maxX-m_minX)/imageWidth;
 	double		deltaY = (m_maxY-m_minY)/imageHeight;
 
-	dc.rectangle( RectBorder( 0, 0, imageWidth-1, imageHeight-1) );
+	dc.drawRectangle( RectBorder( 0, 0, imageWidth-1, imageHeight-1) );
 	dc.getPen().setColor(colors::BLACK);
 
 	if( m_minX <= 0 && m_maxX >= 0 )
