@@ -45,6 +45,7 @@
 #include <gak/shared.h>
 #include <gak/exception.h>
 #include <gak/expressionEvaluator.h>
+#include <gak/math.h>
 
 #include <WINLIB/WINAPP.H>
 #include <WINLIB/colors.h>
@@ -98,6 +99,9 @@ struct FunctionPlot : public gak::Array<Point>
 
 class PlotterMainWindow : public PlotterFORM_form
 {
+	typedef gak::math::Scale<double>	Scale;
+	typedef Scale::Pair					Range;
+
 	double m_minX;
 	double m_maxX;
 	double m_minY;
@@ -192,47 +196,53 @@ void PlotterMainWindow::paintGraph()
 	int			imageWidth =  PaintBox->getClientSize().width;
 	int			imageHeight =  PaintBox->getClientSize().height;
 	DrawDevice	dc(PaintBox);
-	double		deltaX = (m_maxX-m_minX)/imageWidth;
-	double		deltaY = (m_maxY-m_minY)/imageHeight;
+
+	const bool	drawXaxis = m_minY <= 0 && m_maxY >= 0;
+	const bool	drawYaxis = m_minX <= 0 && m_maxX >= 0;
 
 	dc.drawRectangle( RectBorder( 0, 0, imageWidth-1, imageHeight-1) );
 	dc.getPen().setColor(colors::BLACK);
 
-	if( m_minX <= 0 && m_maxX >= 0 )
+	if( drawXaxis || drawYaxis )
 	{
-		int yAxis = int(-m_minX / (-m_minX+m_maxX) * imageWidth);
-		dc.moveTo( yAxis, 0 );
-		dc.lineTo( yAxis, imageHeight-1 );
+		Range	xRange(m_minX, m_maxX), 
+				yRange( m_minY, m_maxY ),
+				widthRange( 0, imageWidth),
+				heightRange( imageHeight, 0 );
+		Scale	xScale( xRange, widthRange ),
+				yScale( yRange, heightRange );
 
-		for( double y = ceil( m_minY ); y <= m_maxY; y++ )
+		if( drawYaxis )
 		{
-			int iy = int((m_maxY-y)/deltaY);
-			dc.moveTo( yAxis, iy );
-			dc.lineTo( yAxis+5, iy );
+			int yAxis = gak::math::round<int>(xScale(0));
+			dc.moveTo( yAxis, 0 );
+			dc.lineTo( yAxis, imageHeight-1 );
+
+			for( double y = ceil( m_minY ); y <= m_maxY; y++ )
+			{
+				int iy = gak::math::round<int>(yScale(y));
+				dc.moveTo( yAxis, iy );
+				dc.lineTo( yAxis+5, iy );
+			}
+		}
+		if( drawXaxis )
+		{
+			int xAxis = gak::math::round<int>(yScale(0));
+
+			dc.moveTo( 0, xAxis );
+			dc.lineTo( imageWidth-1, xAxis );
+
+			for( double x = ceil( m_minX ); x <= m_maxX; x++ )
+			{
+				int ix = gak::math::round<int>(xScale(x));
+				dc.moveTo( ix,  xAxis );
+				dc.lineTo( ix, xAxis-5 );
+			}
 		}
 	}
-	if( m_minY <= 0 && m_maxY >= 0 )
-	{
-		int xAxis = int(m_maxY / (-m_minY+m_maxY) * imageHeight);
-		dc.moveTo( 0, xAxis );
-		dc.lineTo( imageWidth-1, xAxis );
 
-		for( double x = ceil( m_minX ); x <= m_maxX; x++ )
-		{
-			int ix = int((m_maxY-x)/deltaX);
-			dc.moveTo( ix,  xAxis );
-			dc.lineTo( ix, xAxis-5 );
-		}
-	}
-
-	for(
-		gak::Array<FunctionPlot>::const_iterator it = m_graphValues.cbegin(),
-			endIT = m_graphValues.cend();
-		it != endIT;
-		++it
-	)
+	m_graphValues.forEach([&](const FunctionPlot &oneGraph) -> bool
 	{
-		const FunctionPlot	&oneGraph = *it;
 		dc.getPen().setColor(oneGraph.theColor);
 		if( oneGraph.size() >= 2 )
 		{
@@ -240,7 +250,8 @@ void PlotterMainWindow::paintGraph()
 				oneGraph.getDataBuffer(), int(oneGraph.size()-1)
 			);
 		}
-	}
+		return false;
+	});
 }
 
 void PlotterMainWindow::recalc()
@@ -249,10 +260,10 @@ void PlotterMainWindow::recalc()
 
 	m_graphValues.clear();
 
-	m_minX = EditXmin->getText() > "" ? EditXmin->getText().getValueN<double>() : 0;
-	m_maxX = EditXmax->getText() > "" ? EditXmax->getText().getValueN<double>() : 0;
-	m_minY = EditYmin->getText() > "" ? EditYmin->getText().getValueN<double>() : 0;
-	m_maxY = EditYmax->getText() > "" ? EditYmax->getText().getValueN<double>() : 0;
+	m_minX = !EditXmin->getText().isEmpty() ? EditXmin->getText().getValueN<double>() : 0;
+	m_maxX = !EditXmax->getText().isEmpty() ? EditXmax->getText().getValueN<double>() : 0;
+	m_minY = !EditYmin->getText().isEmpty() ? EditYmin->getText().getValueN<double>() : 0;
+	m_maxY = !EditYmax->getText().isEmpty() ? EditYmax->getText().getValueN<double>() : 0;
 
 	if( m_minX >= m_maxX )
 		throw LibraryException( "X Bounds missing or wrong." );
@@ -265,23 +276,23 @@ void PlotterMainWindow::recalc()
 	double deltaX = (m_maxX-m_minX)/imageWidth;
 	double deltaY = (m_maxY-m_minY)/imageHeight;
 
-	if( EditXmin->getText() == "" || EditXmax->getText() == "" )
+	if( EditXmin->getText().isEmpty() || EditXmax->getText().isEmpty() )
 	{
-		if( EditYmin->getText() == "" || EditYmax->getText() == "" )
+		if( EditYmin->getText().isEmpty() || EditYmax->getText().isEmpty() )
 			throw LibraryException( "X Bound cannot be calculated" );
 
-		if( EditXmin->getText() == "" )
+		if( EditXmin->getText().isEmpty() )
 			m_minX = m_maxX - imageWidth * deltaY;
 		else
 			m_maxX = m_minX + imageWidth * deltaY;
 		deltaX = deltaY;
 	}
-	if( EditYmin->getText() == "" || EditYmax->getText() == "" )
+	if( EditYmin->getText().isEmpty() || EditYmax->getText().isEmpty() )
 	{
-		if( EditXmin->getText() == "" || EditXmax->getText() == "" )
+		if( EditXmin->getText().isEmpty() || EditXmax->getText().isEmpty() )
 			throw LibraryException( "Y Bound cannot be calculated" );
 
-		if( EditYmin->getText() == "" )
+		if( EditYmin->getText().isEmpty() )
 			m_minY = m_maxY - imageHeight * deltaX;
 		else
 			m_maxY = m_minY + imageHeight * deltaX;
@@ -289,15 +300,19 @@ void PlotterMainWindow::recalc()
 	}
 
 	gak::Stack<gak::STRING>	terms;
-	if( EditFunction1->getText() > "" )
+	if( !EditFunction1->getText().isEmpty() )
 		terms.push( EditFunction1->getText() );
-	if( EditFunction2->getText() > "" )
+	if( !EditFunction2->getText().isEmpty() )
 		terms.push( EditFunction2->getText() );
-	if( EditFunction3->getText() > "" )
+	if( !EditFunction3->getText().isEmpty() )
 		terms.push( EditFunction3->getText() );
 
 	if( terms.size() )
 	{
+		Range	yRange( m_minY, m_maxY ),
+				heightRange( imageHeight, 0 );
+		Scale	yScale( yRange, heightRange );
+
 		gak::MathExpression	theEvaluator;
 
 		int		colorIndex = 0;
@@ -306,15 +321,14 @@ void PlotterMainWindow::recalc()
 		{
 			gak::STRING	funcTerm = terms.pop();
 
-			COLORREF color = theColors[colorIndex++];
+			COLORREF	color = theColors[colorIndex++];
 
-			int	ix, iy;
+			int			ix = 0;
 
-			double x = m_minX;
-			double y=0;
-			Point	newPoint;
+			double		x = m_minX;
+			double		y=0;
+			Point		newPoint;
 
-			ix = 0;
 			while( true )
 			{
 				// skip invisible points but store the last one in newPoint
@@ -327,9 +341,8 @@ void PlotterMainWindow::recalc()
 							break;
 
 						// store this point
-						iy = int((m_maxY-y)/deltaY);
 						newPoint.x = ix;
-						newPoint.y = iy;
+						newPoint.y = gak::math::round<int>(yScale(y));
 					}
 					catch( gak::DivisionByZeroError & )
 					{
@@ -378,12 +391,10 @@ void PlotterMainWindow::recalc()
 				while( true )
 				{
 					// add the last evaluation
-					iy = int((m_maxY-y)/deltaY);
-
 					Point	&newPoint = oneGraph.createElement();
 
 					newPoint.x = ix;
-					newPoint.y = iy;
+					newPoint.y = gak::math::round<int>(yScale(y));
 
 					// step to next point
 					ix++;
@@ -418,7 +429,7 @@ ProcessStatus PlotterMainWindow::handleButtonClick( int control )
 {
 	if( control == PUSHrefresh_id )
 	{
-		recalc();
+		m_graphValues.clear();
 		invalidateWindow();
 		return psPROCESSED;
 	}
@@ -427,8 +438,7 @@ ProcessStatus PlotterMainWindow::handleButtonClick( int control )
 
 ProcessStatus PlotterMainWindow::handleResize( const Size &newSize )
 {
-	if( isReady() )
-		recalc();
+	m_graphValues.clear();
 	return PlotterFORM_form::handleResize(newSize);
 }
 
